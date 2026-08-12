@@ -3,6 +3,33 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.1.0] - 2026-08-12
+
+Correção vinda de incidente real no primeiro uso em produção da skill (gateway de
+pagamento favo-pay) — exatamente o tipo de contribuição que `CONTRIBUTING.md` pede.
+
+### Adicionado
+
+- **`skill/references/protocolo-paralelo.md`** — seção "Verificação isolada por
+  commit — cuidado com `git stash`", documentando um incidente real de perda
+  silenciosa de arquivos causado por ciclos repetidos de `git stash push
+  --keep-index` / `pop` durante a organização de commits de milestone. Inclui
+  alternativas seguras (verificação contra a árvore completa, `git worktree`) e
+  como recuperar via `git fsck --unreachable` se acontecer mesmo assim.
+- **`skill/SKILL.md`** — aviso equivalente, mais curto, no Passo 6 (Integrar em
+  série), apontando para a seção detalhada.
+
+### Por que isso importa
+
+A skill já exigia evidência de build/teste a cada commit ("Passo 6 — Integrar em
+série"), mas não dizia *como* verificar cada commit com segurança. Na ausência
+dessa orientação, a técnica óbvia (stage o commit N, stash o resto para testar em
+isolamento) causou perda de ~120 linhas de trabalho sem nenhum erro reportado — só
+percebida porque um diff posterior voltou vazio quando não devia. A skill agora
+fecha essa lacuna explicitamente.
+
+[1.1.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.1.0
+
 ## [1.0.0] - 2026-08-12
 
 Primeira versão pública. Extraída de uso real em um gateway de pagamento e generalizada.

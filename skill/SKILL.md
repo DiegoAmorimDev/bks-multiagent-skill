@@ -116,6 +116,13 @@ Agentes entregam dentro dos próprios módulos. **O orquestrador** aplica, um de
 Rodar a suíte após **cada** integração (não só no fim) é o que torna óbvio qual entrega quebrou o
 quê. Investigar uma quebra depois de integrar tudo custa mais que as execuções extras.
 
+> **Não use ciclos de `git stash push/pop` para isolar a verificação de cada
+> commit.** Já causou perda silenciosa de arquivos em produção desta skill — sem
+> erro, sem conflito reportado. Verifique contra a árvore de trabalho completa, ou
+> use `git worktree` para isolamento de verdade. Detalhes e como recuperar se
+> acontecer mesmo assim: `references/protocolo-paralelo.md`, seção "Verificação
+> isolada por commit".
+
 ## Portões de governança
 
 ### 1. Segregação de funções

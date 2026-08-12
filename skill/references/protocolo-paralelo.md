@@ -48,6 +48,35 @@ ordem de chegada:
 Rodar a suíte após cada integração é o que torna óbvio qual entrega quebrou o quê. Investigar
 depois de integrar tudo custa mais que as execuções extras.
 
+### Verificação isolada por commit — cuidado com `git stash`
+
+Ao organizar um monte de código já pronto (não commitado) em vários commits de
+milestone, a tentação é: stage os arquivos do commit N, `git stash push --keep-index`
+o resto para testar só o diff de N em isolamento, commit, `git stash pop`, repete
+para N+1.
+
+**Isso já causou perda de dado real.** Num ciclo com várias repetições desse
+padrão — stage, stash, pop-para-inspecionar, stage de mais um arquivo, stash de
+novo, unstage para o próximo passo — dois arquivos centrais (`main.go` e
+`router.go`, ~120 linhas de trabalho da sessão) voltaram silenciosamente ao estado
+do commit anterior à sessão. **Sem erro, sem conflito, `git stash pop` reportando
+sucesso.** Só foi percebido porque um `git diff HEAD -- main.go` posterior voltou
+vazio quando não devia.
+
+**Não use esse padrão.** Alternativas seguras:
+
+- **Verificação contra a árvore de trabalho completa**, em vez de isolada por
+  commit — build/test são baratos de rodar de novo; a prova fica menos "isolada"
+  por commit, mas o risco de perda cai a zero.
+- **`git worktree add`** para isolamento de verdade, quando o commit realmente
+  precisa ser testado sozinho — não compartilha o stash/index da árvore principal,
+  então não tem esse modo de falha.
+
+Se um stash sumir mesmo assim: `git fsck --unreachable --no-reflog | grep commit`
+lista commits órfãos ainda alcançáveis (git não coleta lixo imediatamente), e
+`git show <sha>:<caminho> > <caminho>` recupera um arquivo específico de dentro
+dele.
+
 ## 5. Portão de revisão
 
 Para cada entrega que tocou área sensível, dispare o `reviewer` em invocação separada, com o
