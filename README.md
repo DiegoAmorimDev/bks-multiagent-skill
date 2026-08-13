@@ -76,7 +76,7 @@ Em uma frase: **sequencial é o padrão; paralelo precisa ser justificado.**
 
 | Perfil | Modelo sugerido | Faz | Nunca faz |
 |---|---|---|---|
-| `builder` | Opus | Implementação, decisão de arquitetura | Commit; aprovar o próprio trabalho |
+| `builder` | Sonnet | Implementação, decisão de arquitetura | Commit; aprovar o próprio trabalho |
 | `reviewer` | Opus | Revisão de segurança/conformidade — só lê | Editar código |
 | `planner` | Sonnet | Specs, ADRs, quebra de tarefa | Código de produção |
 | `scribe` | Haiku | Sincronizar docs de trabalho já verificado | Decidir o que foi feito |
