@@ -62,7 +62,7 @@ Quatro perfis cobrem a maior parte do trabalho. Templates em `templates/agents/`
 
 | Perfil | Modelo sugerido | Faz | Nunca faz |
 |---|---|---|---|
-| `builder` | Alto (Opus) | Implementação, decisão de arquitetura | Commit; aprovar o próprio trabalho |
+| `builder` | Médio (Sonnet) | Implementação, decisão de arquitetura | Commit; aprovar o próprio trabalho |
 | `reviewer` | Alto (Opus) | Revisão de segurança/conformidade — só lê | Editar código |
 | `planner` | Médio (Sonnet) | Specs, ADRs, quebra de tarefa | Código de produção |
 | `scribe` | Baixo (Haiku) | Sincronizar docs de trabalho já verificado | Decidir o que foi feito |
