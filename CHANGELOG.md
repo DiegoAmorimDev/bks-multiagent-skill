@@ -3,6 +3,35 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.2.0] - 2026-08-13
+
+Ajuste vindo de custo real observado em produção da skill (favo-pay) — o perfil `builder`
+processa muitas features guiadas por uma TASK já bem especificada (spec vem do `planner`,
+correção vem de TDD + verificação E2E real), um padrão de trabalho mais mecânico do que o
+que justifica um modelo de raciocínio no topo da linha em todo commit.
+
+### Alterado
+
+- **`skill/templates/agents/builder.md`** e **`skill/SKILL.md`** (tabela de perfis) — modelo
+  sugerido para `builder` passa de Opus para **Sonnet**. `reviewer` continua em Opus: é o único
+  perfil onde o custo de um achado escapando (bug financeiro/segurança indo para produção)
+  supera o custo do modelo — a proporcionalidade descrita no Passo 4 ("modelo proporcional à
+  tarefa") já apontava nessa direção, só não tinha sido aplicada ao próprio `builder`.
+- **`README.md`** — tabela de perfis sincronizada com a mesma mudança.
+
+### Por que isso importa
+
+A tabela original recomendava Opus para `builder` e `reviewer` igualmente, tratando os dois
+como "trabalho de arquitetura" — mas só `reviewer` é un-repetível por natureza (a revisão só
+acontece uma vez por mudança sensível, e um bypass ali não tem segunda chance). `builder`
+roda uma vez por feature/task, muitas vezes seguindo uma instrução já detalhada pelo
+`planner`, com uma rede de segurança própria (TDD + teste de ponta a ponta contra o sistema
+real, exigidos no Passo 6). Não é um domínio a menos zelo — é reconhecer que a skill já tinha
+os dois controles (spec detalhada + verificação real) que tornam Sonnet suficiente aqui, sem
+abrir mão do padrão de qualidade.
+
+[1.2.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.2.0
+
 ## [1.1.0] - 2026-08-12
 
 Correção vinda de incidente real no primeiro uso em produção da skill (gateway de
