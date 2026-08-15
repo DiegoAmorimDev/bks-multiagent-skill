@@ -1,6 +1,6 @@
 ---
 name: planner
-description: Planejamento e escrita de specs, ADRs e quebra de tarefas. Usar para transformar uma ideia de feature em tarefas implementáveis, redigir critérios de aceite, ou registrar decisão de arquitetura. Não implementa código. Substitua <PROJETO> e os caminhos pelos do seu repositório.
+description: "Planejamento e escrita de specs, ADRs e quebra de tarefas. Usar para transformar uma ideia de feature em tarefas implementáveis, redigir critérios de aceite, ou registrar decisão de arquitetura. Não implementa código. Substitua <PROJETO> e os caminhos pelos do seu repositório."
 model: sonnet
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---

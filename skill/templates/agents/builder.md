@@ -1,6 +1,6 @@
 ---
 name: builder
-description: Implementação de feature ou task com testes — código de domínio, serviços, adaptadores, handlers. Usar para trabalho que envolve decisão de arquitetura, não para tarefas mecânicas. Substitua <PROJETO> e os caminhos pelos do seu repositório.
+description: "Implementação de feature ou task com testes — código de domínio, serviços, adaptadores, handlers. Usar para trabalho que envolve decisão de arquitetura, não para tarefas mecânicas. Substitua <PROJETO> e os caminhos pelos do seu repositório."
 model: sonnet
 tools: Read, Write, Edit, Grep, Glob, Bash
 ---

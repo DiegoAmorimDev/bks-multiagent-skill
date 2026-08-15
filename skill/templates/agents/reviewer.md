@@ -1,6 +1,6 @@
 ---
 name: reviewer
-description: Revisão independente de segurança e conformidade — autenticação, autorização, isolamento entre titulares, integridade de dados críticos, exposição de segredo. Usar antes de integrar qualquer mudança em área sensível. Read-only, reporta achados e não edita código. Substitua <PROJETO> e as áreas pelas do seu manifesto.
+description: "Revisão independente de segurança e conformidade — autenticação, autorização, isolamento entre titulares, integridade de dados críticos, exposição de segredo. Usar antes de integrar qualquer mudança em área sensível. Read-only, reporta achados e não edita código. Substitua <PROJETO> e as áreas pelas do seu manifesto."
 model: opus
 tools: Read, Grep, Glob, Bash
 ---

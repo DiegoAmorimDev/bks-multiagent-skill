@@ -3,6 +3,44 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.3.0] - 2026-08-15
+
+Correção vinda de um diagnóstico errado que sobreviveu cinco sessões em produção da skill
+(favo-pay) — o perfil `reviewer` simplesmente não registrava, e a hipótese aceita durante dias
+("o harness bloqueia subagente pinado num modelo acima do da sessão") era falsa.
+
+### Adicionado
+
+- **`skill/SKILL.md`**, nova subseção "Confirme que o agente registrou" em *Perfis de agente* —
+  frontmatter inválido faz o harness descartar a definição **em silêncio**, sem erro nem aviso.
+  A subseção manda listar os tipos disponíveis e conferir o nome antes de contar com o agente,
+  documenta a causa concreta já observada (`description:` sem aspas contendo `: ` em arquivo
+  CRLF) e dá o procedimento de isolamento para quando o sintoma reaparecer.
+
+### Alterado
+
+- **`skill/templates/agents/*.md`** (os quatro perfis) — valor de `description:` agora vem
+  **entre aspas**. Os templates são distribuídos em CRLF e adaptados majoritariamente no
+  Windows; sem aspas, qualquer `:` que o usuário escreva ao adaptar a description derruba o
+  agente inteiro sem sinal nenhum.
+
+### Por que isso importa
+
+O modo de falha é pior que o próprio bug: o agente some sem mensagem, e o portão de revisão
+independente — o controle mais importante que esta skill impõe (segregação de funções, Portão 1)
+— deixa de existir sem que ninguém perceba. Nas cinco ocorrências reais, o trabalho seguiu com
+um agente genérico recebendo a persona colada à mão; funcionou, mas por diligência do operador,
+não por garantia do processo. Um portão que pode desaparecer em silêncio não é um portão, e
+nenhuma quantidade de rigor nas outras etapas compensa isso.
+
+O diagnóstico errado é parte da lição: o sintoma (só o perfil em Opus falhava, os em
+Sonnet/Haiku registravam) apontava com força para restrição de modelo, e a correlação era
+perfeita — porque só o `reviewer` tinha `: ` na description. Correlação com amostra de quatro
+arquivos não é causa. O procedimento de isolamento agora está na skill justamente para que a
+próxima ocorrência custe minutos em vez de sessões.
+
+[1.3.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.3.0
+
 ## [1.2.0] - 2026-08-13
 
 Ajuste vindo de custo real observado em produção da skill (favo-pay) — o perfil `builder`
