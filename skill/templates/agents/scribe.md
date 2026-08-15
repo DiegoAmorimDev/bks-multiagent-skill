@@ -1,6 +1,6 @@
 ---
 name: scribe
-description: Sincronização mecânica de documentação depois que o trabalho já foi implementado e verificado — documento de estado, referência de API, guia de teste, marcação de specs como concluídas. Não decide o que foi feito, só registra o que já está pronto e comprovado. Substitua <PROJETO> e os caminhos pelos do seu repositório.
+description: "Sincronização mecânica de documentação depois que o trabalho já foi implementado e verificado — documento de estado, referência de API, guia de teste, marcação de specs como concluídas. Não decide o que foi feito, só registra o que já está pronto e comprovado. Substitua <PROJETO> e os caminhos pelos do seu repositório."
 model: haiku
 tools: Read, Write, Edit, Grep, Glob
 ---

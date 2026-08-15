@@ -70,6 +70,31 @@ Quatro perfis cobrem a maior parte do trabalho. Templates em `templates/agents/`
 Ordem natural dentro de **uma** entrega: `planner` → `builder` → `reviewer` → `scribe`.
 São dependentes por natureza — nunca paralelize entre si na mesma entrega.
 
+### Confirme que o agente registrou
+
+Criar o arquivo de definição não garante que o harness carregou o agente. **Frontmatter inválido é
+descartado em silêncio**: sem erro, sem aviso — o agente só não aparece na lista de tipos
+disponíveis, e a chamada falha com "agent type not found" no pior momento possível (em geral o
+portão de revisão, já no fim da entrega, quando o custo de contornar é maior).
+
+Depois de criar ou editar qualquer definição, **liste os tipos de agente disponíveis e confirme que
+o nome está lá** antes de contar com ele. Trate ausência como bug de configuração, não como
+indisponibilidade do modelo.
+
+Causa já observada em produção desta skill: **`description:` sem aspas contendo `: `
+(dois-pontos seguido de espaço) em arquivo com quebras de linha CRLF**. Em YAML, `: ` dentro de um
+escalar simples é ambíguo; somado ao `\r` do CRLF, o parse falha e a definição inteira é
+descartada. Arquivo criado no Windows nasce em CRLF por padrão — e uma description como
+`Read-only: reporta achados` dispara exatamente isso. O sintoma engana: parece restrição de modelo
+ou bug do harness, e leva a diagnóstico errado.
+
+Por isso os templates em `templates/agents/` trazem `description:` **entre aspas**. Mantenha as
+aspas ao adaptar, e prefira `—` ou vírgula a `:` dentro do texto.
+
+Se mesmo assim não registrar, isole em vez de adivinhar: recrie a definição num arquivo novo,
+mínimo e em LF. Se a cópia registra e o original não, a diferença está no arquivo — não no nome
+do agente nem no modelo escolhido.
+
 ## Passo 3 — Teste de independência
 
 Antes de disparar 2+ agentes, responda. Um "não" em qualquer uma = sequencial.

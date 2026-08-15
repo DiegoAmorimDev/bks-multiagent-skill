@@ -95,6 +95,15 @@ Ajuste em cada arquivo:
 > Os perfis fixam **modelo por tipo de tarefa**. É o principal mecanismo de controle de custo:
 > revisão de segurança em modelo forte, sincronização de documentação em modelo barato.
 
+**Ao editar a `description`, mantenha as aspas.** Frontmatter inválido é descartado em silêncio —
+sem erro, sem aviso, o agente só não existe. O caso já visto em produção: `: ` (dois-pontos com
+espaço) dentro de uma description sem aspas, em arquivo com quebras CRLF — o padrão de qualquer
+arquivo criado no Windows. Prefira `—` ou vírgula a `:` dentro do texto.
+
+**Confirme antes de confiar:** depois de copiar e ajustar, liste os tipos de agente disponíveis na
+sessão e verifique que cada `name` aparece. Se um sumiu, é configuração — não indisponibilidade do
+modelo. Procedimento de isolamento em `skill/SKILL.md`, seção "Confirme que o agente registrou".
+
 ---
 
 ## 4. Integrar com o processo existente
