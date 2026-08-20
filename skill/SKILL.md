@@ -70,6 +70,14 @@ Quatro perfis cobrem a maior parte do trabalho. Templates em `templates/agents/`
 Ordem natural dentro de **uma** entrega: `planner` → `builder` → `reviewer` → `scribe`.
 São dependentes por natureza — nunca paralelize entre si na mesma entrega.
 
+### Roteamento de provedor (opcional)
+
+Modelo (Haiku/Sonnet/Opus) e provedor (Anthropic ou terceiro via API Anthropic-compatível) são
+dimensões diferentes. Para rodar `builder`/`scribe` num provedor mais barato mantendo `planner` e
+`reviewer` em Claude de verdade — sem gateway, sem misturar provedor dentro da mesma sessão —
+veja `references/roteamento-hibrido-provedores.md`. `reviewer` nunca roteia: é o perfil
+un-repetível do Portão 2.
+
 ### Confirme que o agente registrou
 
 Criar o arquivo de definição não garante que o harness carregou o agente. **Frontmatter inválido é
@@ -242,4 +250,5 @@ Qualquer um destes: volte ao sequencial na próxima rodada.
 - `references/manifesto-projeto.md` — template do manifesto (preencher por projeto)
 - `references/checklist-revisao-critica.md` — checklist do portão de revisão, com perfis por domínio
 - `references/protocolo-paralelo.md` — protocolo operacional detalhado de fan-out e recuperação de conflito
+- `references/roteamento-hibrido-provedores.md` — rotear `builder`/`scribe` pra provedor terceiro mais barato sem gateway (opcional)
 - `templates/agents/` — definições prontas dos quatro perfis

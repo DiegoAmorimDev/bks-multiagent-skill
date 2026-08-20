@@ -3,6 +3,45 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.4.0] - 2026-08-20
+
+Adição vinda de pedido real do usuário (favo-pay) — testar um provedor terceiro (DeepSeek, via
+sua API compatível com o formato Anthropic) para tarefas mecânicas de `builder`/`scribe`, mantendo
+`reviewer` e áreas sensíveis exclusivamente em Claude.
+
+### Adicionado
+
+- **`skill/references/roteamento-hibrido-provedores.md`** — padrão opcional de roteamento híbrido
+  por subprocesso (`claude -p` separado, `ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY` do terceiro
+  setados só naquele processo, nunca globalmente). Cobre: por que não dá para misturar provedor
+  dentro da mesma sessão (`ANTHROPIC_BASE_URL` é global por processo), quais perfis podem rotear
+  (`builder`/`scribe` sim, `reviewer` nunca), limitações confirmadas do lado do provedor (sem MCP,
+  sem cache de prompt, sem imagem/documento), aviso de que `total_cost_usd` do `--output-format
+  json` reflete o preço da Anthropic para o nome de modelo enviado — não o que o terceiro cobrou
+  de fato —, procedimento de setup que nunca deixa a chave passar pelo contexto da conversa, e o
+  aviso de que este padrão **não aparece no agents-observe** (isolado por teste de controle: o
+  hook de registro de sessão não dispara em modo `-p`/headless, independente do provedor).
+- **`skill/SKILL.md`**, nova subseção "Roteamento de provedor (opcional)" em *Perfis de agente*,
+  apontando para a referência.
+- **`README.md`** — item novo na árvore de `references/`.
+
+### Por que isso importa
+
+Modelo (tier: Haiku/Sonnet/Opus) e provedor (Anthropic ou terceiro) são dimensões independentes
+que a skill não distinguia até aqui. Sem essa separação explícita, a tentação natural ao buscar
+economia é rebaixar o tier do `builder` ainda mais (como já aconteceu em v1.2.0) em vez de trocar
+o provedor para o trabalho mais mecânico — mas as duas trocas têm riscos completamente diferentes:
+rebaixar tier é um risco de qualidade; trocar provedor é um risco de dado saindo do perímetro da
+Anthropic, que só faz sentido fora de área sensível. A skill agora nomeia essa segunda dimensão em
+vez de deixar cada projeto reinventar a regra sozinho.
+
+Validado de ponta a ponta contra a API real da DeepSeek nesta sessão (não é só teoria): teste com
+chave válida (sucesso) e chave inválida (erro 401 no formato de erro característico da própria
+DeepSeek, confirmando que a requisição realmente saiu pela infraestrutura do terceiro em vez de
+cair de volta no login Anthropic normal).
+
+[1.4.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.4.0
+
 ## [1.3.0] - 2026-08-15
 
 Correção vinda de um diagnóstico errado que sobreviveu cinco sessões em produção da skill
