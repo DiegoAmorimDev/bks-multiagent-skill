@@ -94,7 +94,8 @@ skill/
 ├── references/
 │   ├── manifesto-projeto.md          # template a preencher por projeto
 │   ├── checklist-revisao-critica.md  # checklist do portão, com perfis por domínio
-│   └── protocolo-paralelo.md         # fan-out, integração e recuperação de conflito
+│   ├── protocolo-paralelo.md         # fan-out, integração e recuperação de conflito
+│   └── roteamento-hibrido-provedores.md  # builder/scribe em provedor terceiro, sem gateway (opcional)
 └── templates/agents/                 # os quatro perfis, prontos para ajustar
 
 docs/
