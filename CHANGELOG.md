@@ -3,6 +3,37 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.6.0] - 2026-08-20
+
+Métricas reais de economia (não estimativa) e mais palavras-chave de descoberta, pedidas pelo
+usuário depois de rodar o padrão em produção e conferir o billing real no painel da DeepSeek.
+
+### Adicionado
+
+- **`skill/references/roteamento-hibrido-provedores.md`**, nova seção "Economia real medida" —
+  257.203 tokens (o total do Claude Code e o do painel da DeepSeek batem exato), tier
+  Opus/`deepseek-v4-pro`: estimativa Anthropic $0,4841 vs. billing real DeepSeek $0,05 (confirmado
+  pelo usuário no próprio painel) — **≈89,7% mais barato, ≈9,7×**. Explicitamente marcado como
+  medição de uma sessão, não benchmark nem promessa de preço, e não extrapolado pra tier
+  Sonnet/Haiku (não medido ainda).
+- **`skill/SKILL.md`** — mesma métrica resumida na seção "Roteamento de provedor"; frontmatter
+  `description` reescrita com mais palavras-chave de descoberta ("deepseek v4", "claude + deepseek",
+  "orquestração híbrida", "reduzir custo de agente", "cost reduction", "hybrid orchestration") e
+  menção do número de economia logo na abertura.
+- **`README.md`** — callout de abertura com a métrica, linkando pra referência completa.
+
+### Por que isso importa
+
+v1.5.0 reposicionou o roteamento de provedor como eixo central da skill, mas ainda com uma
+afirmação qualitativa ("mais barato"). Uma medição real, com os dois lados batendo exatamente no
+mesmo volume de token — o que o Claude Code registrou localmente e o que o painel de billing do
+provedor confirmou —, é uma evidência de ordem diferente de uma estimativa de preço de tabela.
+Documentar isso como "medido nesta sessão" em vez de "DeepSeek é X% mais barato" (afirmação
+genérica que a skill não tem como garantir) segue o mesmo padrão de rigor do resto do arquivo —
+toda decisão aqui vem de incidente ou medição real, não de teoria.
+
+[1.6.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.6.0
+
 ## [1.5.0] - 2026-08-20
 
 Reposicionamento pedido pelo usuário logo após a v1.4.0: roteamento de provedor deixa de ser nota
