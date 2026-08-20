@@ -86,6 +86,47 @@ Isso é para trabalho tier `opus` (`builder` em tarefa mais pesada, ou o `scribe
 rodando com `--model opus`). Perfis rodando em `deepseek-v4-flash` (`sonnet`/`haiku`) têm sua
 própria relação de preço, não medida ainda — não extrapole este número pra lá sem medir.
 
+### Como reproduzir esta medição no seu próprio uso
+
+O número acima é specífico desta sessão — modelo, volume de token e o que o provedor cobrou por
+ele mudam com o tempo. Pra medir o seu:
+
+1. Rode uma tarefa real (não um teste de 3 tokens — o efeito do cache de prompt só aparece em
+   volume real) pelo padrão de subprocesso descrito neste arquivo, com `--output-format json`.
+2. Some `total_cost_usd` de cada chamada — é a estimativa Anthropic (não o custo real), mas dá o
+   volume de token equivalente pra comparar.
+3. Some os tokens (`input_tokens + cache_read_input_tokens + cache_creation_input_tokens +
+   output_tokens`) de cada chamada.
+4. Confira o painel de billing do provedor pro mesmo período — o total de token de lá deveria bater
+   (ou ficar muito perto) do que você somou no passo 3. Se não bater, o provedor pode contar token
+   de um jeito diferente (ex.: não separar cache read/write) — investigue antes de comparar custo.
+5. `redução = 1 - (custo_real_provedor / soma_total_cost_usd_anthropic)`.
+
+## Fontes
+
+Este arquivo se apoia em três tipos de fonte. Provedores mudam mapeamento, limitação e preço com o
+tempo — trate isto como um resumo datado, não a referência normativa; confira a fonte oficial antes
+de depender de qualquer afirmação técnica específica.
+
+**Documentação oficial da DeepSeek** (mapeamento de modelo, formato de erro, limitações do endpoint
+Anthropic-compatível):
+- [`api-docs.deepseek.com/guides/anthropic_api`](https://api-docs.deepseek.com/guides/anthropic_api/) — endpoint `https://api.deepseek.com/anthropic`, mapeamento `claude-opus-*` → `deepseek-v4-pro` / `claude-sonnet-*`, `claude-haiku-*` → `deepseek-v4-flash`, campos não suportados (MCP, imagem/documento, `cache_control`, `redacted_thinking`, `budget_tokens`, `top_k`, `disable_parallel_tool_use`).
+- [`api-docs.deepseek.com/news/news260813`](https://api-docs.deepseek.com/news/news260813/) — GA do DeepSeek-V4-Pro (2026-08-13), 1M de contexto default em todos os serviços oficiais.
+- [`api-docs.deepseek.com/news/news260424`](https://api-docs.deepseek.com/news/news260424/) — preview do DeepSeek-V4 (2026-04-24): V4-Pro (1,6T total / 49B ativos) e V4-Flash (284B total / 13B ativos), arquitetura MoE.
+
+**Documentação oficial da Anthropic / Claude Code** (por que o roteamento é por subprocesso, não
+nativo):
+- [`code.claude.com/docs/en/model-config`](https://code.claude.com/docs/en/model-config) — `ANTHROPIC_BASE_URL` muda pra onde a requisição vai, não quem responde; aliases de modelo (`opus`/`sonnet`/`haiku`) resolvem client-side antes do envio.
+- [`code.claude.com/docs/en/llm-gateway`](https://code.claude.com/docs/en/llm-gateway) — a Anthropic não endossa, mantém nem audita gateway de terceiro pra modelos não-Claude; roteamento nativo por modelo dentro da sessão exige essa infraestrutura.
+
+**Medição direta** (não é documentação de terceiro — é dado desta skill, com metodologia
+reproduzível na seção anterior):
+- Validação de rota (chave válida / chave inválida, formato de erro do provedor): 2026-08-20, ver "Como isso foi validado" acima.
+- Economia de custo (257.203 tokens, $0,4841 estimado vs. $0,05 real, ≈89,7%/≈9,7×): 2026-08-20, tier Opus/`deepseek-v4-pro`, confirmado no painel de billing da DeepSeek pelo usuário do projeto onde esta skill foi validada. Não é benchmark de terceiro nem número de marketing do provedor — é o que aconteceu numa sessão real, com os dois lados (contagem local do Claude Code e billing do provedor) medidos e batendo exato em tokens.
+
+Achou um mapeamento, limitação ou número desatualizado? É exatamente o tipo de contribuição que
+`CONTRIBUTING.md` pede — abra um PR atualizando a fonte junto com a data.
+
 ## Setup: nunca deixe a chave passar pelo contexto da conversa
 
 A chave do terceiro **nunca** deve aparecer digitada no chat com o orquestrador nem em um comando
