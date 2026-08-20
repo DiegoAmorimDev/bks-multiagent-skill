@@ -1,25 +1,35 @@
 ---
 name: bks-multiagent-skill
 description: >
-  Orquestração multi-agente com governança para sistemas de alta criticidade. Define quais tarefas
-  podem rodar em paralelo sem corromper estado compartilhado, quais exigem revisão independente
-  obrigatória, e como briefar subagentes gastando o mínimo de tokens. Funciona em qualquer stack —
-  cada projeto declara suas zonas de contenção e áreas sensíveis em um manifesto.
+  Orquestração multi-agente com governança e roteamento de provedor (Claude + terceiro tipo
+  DeepSeek) para sistemas de alta criticidade. Define quais tarefas podem rodar em paralelo sem
+  corromper estado compartilhado, quais exigem revisão independente obrigatória, como briefar
+  subagentes gastando o mínimo de tokens, e quais perfis podem rodar num provedor mais barato
+  (via API Anthropic-compatível) sem abrir mão de qualidade nos papéis que importam. Funciona em
+  qualquer stack — cada projeto declara suas zonas de contenção e áreas sensíveis em um manifesto.
   Use ao delegar implementação, revisão ou documentação a subagentes, especialmente ao rodar 2+
-  tarefas ao mesmo tempo. Trigger: "paralelo", "multi-agente", "delegar", "subagente", "fan-out",
-  "vários agentes", "orquestrar", "/bks-multiagent-skill".
+  tarefas ao mesmo tempo ou ao otimizar custo de token entre Claude e um provedor terceiro.
+  Trigger: "paralelo", "multi-agente", "delegar", "subagente", "fan-out", "vários agentes",
+  "orquestrar", "deepseek", "roteamento de provedor", "economia de token", "/bks-multiagent-skill".
 ---
 
-# Orquestração multi-agente com governança
+# Orquestração multi-agente com governança — e economia de provedor (Claude + DeepSeek)
 
 Paralelismo entre agentes não é otimização gratuita. Ele troca tempo por **risco de corrupção de
 estado compartilhado** e por **perda de rastreabilidade** de quem decidiu o quê. Em sistema de
 baixa criticidade isso é aceitável na base do "depois arruma". Em sistema que move dinheiro,
 guarda dado pessoal ou responde a auditoria externa, não é.
 
-Esta skill governa **como** delegar. Ela não substitui o processo de planejamento do projeto —
-o plano continua onde já estava (specs, issues, backlog). Aqui se decide: paraleliza ou não,
-quem revisa, o que cada agente pode tocar, e quanto contexto ele recebe.
+Esta skill governa **como** delegar, em dois eixos independentes que se combinam:
+
+1. **Modelo/tier** (Haiku/Sonnet/Opus) — proporcional à complexidade da tarefa.
+2. **Provedor** (Anthropic ou um terceiro compatível com a API Anthropic, ex. DeepSeek) — para
+   rodar os perfis mecânicos (`builder`/`scribe`) por uma fração do custo, sem tocar nos papéis
+   onde qualidade e confiabilidade pesam mais que preço (`reviewer`, decisão de arquitetura).
+
+Ela não substitui o processo de planejamento do projeto — o plano continua onde já estava (specs,
+issues, backlog). Aqui se decide: paraleliza ou não, quem revisa, o que cada agente pode tocar,
+quanto contexto ele recebe, e **em qual provedor cada perfil roda**.
 
 ## Regra zero
 
@@ -70,14 +80,6 @@ Quatro perfis cobrem a maior parte do trabalho. Templates em `templates/agents/`
 Ordem natural dentro de **uma** entrega: `planner` → `builder` → `reviewer` → `scribe`.
 São dependentes por natureza — nunca paralelize entre si na mesma entrega.
 
-### Roteamento de provedor (opcional)
-
-Modelo (Haiku/Sonnet/Opus) e provedor (Anthropic ou terceiro via API Anthropic-compatível) são
-dimensões diferentes. Para rodar `builder`/`scribe` num provedor mais barato mantendo `planner` e
-`reviewer` em Claude de verdade — sem gateway, sem misturar provedor dentro da mesma sessão —
-veja `references/roteamento-hibrido-provedores.md`. `reviewer` nunca roteia: é o perfil
-un-repetível do Portão 2.
-
 ### Confirme que o agente registrou
 
 Criar o arquivo de definição não garante que o harness carregou o agente. **Frontmatter inválido é
@@ -102,6 +104,50 @@ aspas ao adaptar, e prefira `—` ou vírgula a `:` dentro do texto.
 Se mesmo assim não registrar, isole em vez de adivinhar: recrie a definição num arquivo novo,
 mínimo e em LF. Se a cópia registra e o original não, a diferença está no arquivo — não no nome
 do agente nem no modelo escolhido.
+
+## Roteamento de provedor — Claude + terceiro (DeepSeek)
+
+Modelo e provedor são eixos independentes. Modelo decide o tier (Haiku/Sonnet/Opus); provedor
+decide **onde** a requisição é processada — Anthropic direto, ou um terceiro que expõe API
+compatível com o formato Anthropic (`ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY`). Os dois se
+combinam por perfil:
+
+| Perfil | Roteia para terceiro? | Por quê |
+|---|---|---|
+| `builder` | Sim, se a tarefa não depende de MCP | Mecânico o bastante quando a spec já vem pronta do `planner`; a rede de segurança é o próprio TDD + verificação E2E real |
+| `scribe` | Sim | Sincronizar doc de trabalho já verificado é o caso mais barato de todos |
+| `planner` | Não, por padrão | Decisão de arquitetura errada custa caro — mantenha em Claude a menos que a tarefa seja mecânica o bastante |
+| `reviewer` | **Nunca** | Portão 2 (un-repetível): o custo de um achado escapando supera qualquer economia de token, independente de o provedor terceiro ser confiável ou não com o dado |
+
+**Como, sem gateway:** dentro de uma única sessão, `ANTHROPIC_BASE_URL` é global — muda para onde
+a requisição vai, não quem responde. Não há "este subagente vai pro provedor X" nativo sem um LLM
+gateway (infra própria, que a Anthropic não endossa para modelos não-Claude). O padrão que esta
+skill usa evita essa infraestrutura: o orquestrador (sessão principal, Claude, com todas as
+ferramentas) dispara um **processo `claude -p` separado**, com as duas variáveis setadas **só
+naquele processo**, nunca globalmente:
+
+```powershell
+$env:ANTHROPIC_API_KEY = (chave do terceiro, lida de um arquivo fora do repo — nunca digitada no chat)
+$env:ANTHROPIC_BASE_URL = "https://api.deepseek.com/anthropic"
+claude -p "<briefing padrão, allowlist de um arquivo/módulo>" --model opus --permission-mode acceptEdits --output-format json
+Remove-Item Env:\ANTHROPIC_API_KEY; Remove-Item Env:\ANTHROPIC_BASE_URL
+```
+
+`--model opus` aqui não liga a Opus de verdade — é o nome que a DeepSeek mapeia server-side para
+`deepseek-v4-pro` (`claude-sonnet`/`claude-haiku` mapeiam para `deepseek-v4-flash`). Confirme o
+mapeamento vigente na doc do provedor antes de assumir que continua igual.
+
+**Antes de rotear área sensível do manifesto** (financeiro, PCI, dado regulado): por padrão esta
+skill assume que não se roteia — trafegar código/prompt/saída de ferramenta por infraestrutura de
+terceiro é uma decisão de risco que só o dono do projeto pode tomar, e que precisa virar registro
+explícito no manifesto (Portão 5, trilha de auditoria), não uma escolha implícita no meio de uma
+sessão. Quando o dono do projeto autoriza essa cobertura ampliada, registre a decisão do mesmo jeito
+que qualquer outra mudança de regra de segurança/conformidade — com data e justificativa.
+
+Guia completo (setup seguro da chave, limitações confirmadas do provedor — sem MCP, sem cache de
+prompt, sem imagem/documento —, por que `total_cost_usd` do `--output-format json` não reflete o
+que o terceiro cobrou de fato, e por que este padrão não aparece no agents-observe):
+`references/roteamento-hibrido-provedores.md`.
 
 ## Passo 3 — Teste de independência
 
