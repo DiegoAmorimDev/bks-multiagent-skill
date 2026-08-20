@@ -3,6 +3,34 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.7.0] - 2026-08-20
+
+`README.md` reescrito pra abrir direto em Claude+DeepSeek, a pedido do usuário: v1.5.0/v1.6.0
+tinham dado prominência à seção, mas o README ainda liderava com "orquestração multi-agente com
+governança" — governança como sujeito da frase, DeepSeek como complemento.
+
+### Alterado
+
+- **`README.md`** — título ganha subtítulo imediato "Orquestração híbrida Claude + DeepSeek";
+  parágrafo de abertura reescrito com o roteamento de provedor como sujeito da frase (governança
+  vira "o que torna esse roteamento seguro", não o contrário). Nova seção
+  **"Claude vs DeepSeek — qual provedor por perfil"**, tabela comparativa de verdade (provedor +
+  modelo + custo medido + regra), logo depois do callout de métricas, antes de qualquer outra
+  seção — inclusive antes de "O problema que ela resolve". A tabela "Os quatro perfis" (modelo por
+  tier) ganha uma linha explicando que é um eixo independente da tabela nova, pra não parecer
+  duplicata nem contradição.
+
+### Por que isso importa
+
+Ordem de leitura num README é prioridade declarada. Ter a métrica de economia num callout no meio
+do texto, mas o roteamento de provedor só formalizado como tabela lá embaixo (na antiga posição da
+seção "Os quatro perfis"), deixava a primeira impressão do repositório ainda centrada em governança
+genérica — que é real e importante, mas não é mais o que diferencia esta skill de outras opções de
+orquestração multi-agente. Quem abre o README agora vê a decisão Claude-vs-DeepSeek por perfil,
+com custo medido, antes de qualquer outro conteúdo.
+
+[1.7.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.7.0
+
 ## [1.6.0] - 2026-08-20
 
 Métricas reais de economia (não estimativa) e mais palavras-chave de descoberta, pedidas pelo
