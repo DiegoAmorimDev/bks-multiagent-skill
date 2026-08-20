@@ -1,14 +1,18 @@
 # bks-multiagent-skill
 
-Skill de orquestração multi-agente **com governança e economia de provedor** para Claude Code,
-pensada para sistemas onde errar custa caro: pagamentos, saúde, identidade, dado regulado,
-infraestrutura.
+Orquestração multi-agente **Claude + DeepSeek**, com governança de paralelismo e roteamento de
+provedor para Claude Code — pensada para sistemas onde errar custa caro: pagamentos, saúde,
+identidade, dado regulado, infraestrutura.
 
 Paralelizar agentes é fácil. O difícil é fazer isso sem corromper estado compartilhado, sem perder
 rastreabilidade de quem decidiu o quê, sem queimar orçamento de tokens em agentes que redescobrem
 contexto que você já tinha — e, cada vez mais, sem pagar preço de modelo top de linha por trabalho
-mecânico quando um provedor terceiro compatível com a API Anthropic (ex. DeepSeek) resolve pelo
-mesmo resultado por uma fração do custo.
+mecânico quando um provedor terceiro compatível com a API Anthropic (DeepSeek v4-pro/flash) resolve
+pelo mesmo resultado por uma fração do custo.
+
+> **Medido em produção, não estimado:** mesmo volume de token (257.203), tier Opus/`deepseek-v4-pro`
+> — estimativa Anthropic $0,4841 vs. billing real da DeepSeek $0,05. **≈89,7% mais barato (≈9,7×).**
+> Detalhe e como reproduzir: [`skill/references/roteamento-hibrido-provedores.md`](skill/references/roteamento-hibrido-provedores.md).
 
 ---
 

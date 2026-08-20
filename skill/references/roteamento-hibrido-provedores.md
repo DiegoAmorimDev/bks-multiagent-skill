@@ -63,6 +63,29 @@ a tabela de preço da Anthropic para o nome de modelo que **você enviou** (ex.:
 não o que o terceiro efetivamente cobrou (`deepseek-v4-pro`). Não use esse campo como gasto real
 neste modo — confira o dashboard de billing do provedor.
 
+## Economia real medida — DeepSeek v4-pro vs. estimativa Anthropic, mesmo volume de token
+
+Não é benchmark nem promessa de preço futuro — é o que aconteceu nesta sessão, com os dois lados
+medidos: o total de token do Claude Code (`--output-format json`, dois runs de teste tier `opus`) e
+o billing real do painel da DeepSeek pro mesmo período. Os dois batem exatamente:
+
+| | Claude Code (estimativa Anthropic p/ `claude-opus-5`) | Painel DeepSeek (real, `deepseek-v4-pro`) |
+|---|---|---|
+| Tokens | 257.203 (57.682 + 199.521, dois runs) | 257.203 (bate exato) |
+| Requisições | 2 runs, 10 turnos | 8 API requests |
+| Custo | **$0,4841** (`$0,166066` + `$0,318073`, soma dos dois `total_cost_usd`) | **$0,05** |
+
+**≈ 89,7% mais barato (≈ 9,7×) no mesmo volume de token, tier Opus/`deepseek-v4-pro`.** O número da
+coluna DeepSeek é o que o usuário confirmou no próprio painel de billing, não uma estimativa —
+é o dado mais confiável que existe pra esse lado da comparação, porque nem o Claude Code nem esta
+skill têm visibilidade do preço real do terceiro (ver aviso acima). O da coluna Anthropic é a
+estimativa que o Claude Code teria mostrado se essas mesmas chamadas tivessem ido pro `claude-opus-5`
+de verdade — é o ponto de comparação disponível, não o preço de tabela oficial confirmado por fatura.
+
+Isso é para trabalho tier `opus` (`builder` em tarefa mais pesada, ou o `scribe` deste exemplo
+rodando com `--model opus`). Perfis rodando em `deepseek-v4-flash` (`sonnet`/`haiku`) têm sua
+própria relação de preço, não medida ainda — não extrapole este número pra lá sem medir.
+
 ## Setup: nunca deixe a chave passar pelo contexto da conversa
 
 A chave do terceiro **nunca** deve aparecer digitada no chat com o orquestrador nem em um comando
