@@ -1,16 +1,20 @@
 ---
 name: bks-multiagent-skill
 description: >
-  Orquestração multi-agente com governança e roteamento de provedor (Claude + terceiro tipo
-  DeepSeek) para sistemas de alta criticidade. Define quais tarefas podem rodar em paralelo sem
-  corromper estado compartilhado, quais exigem revisão independente obrigatória, como briefar
-  subagentes gastando o mínimo de tokens, e quais perfis podem rodar num provedor mais barato
-  (via API Anthropic-compatível) sem abrir mão de qualidade nos papéis que importam. Funciona em
-  qualquer stack — cada projeto declara suas zonas de contenção e áreas sensíveis em um manifesto.
-  Use ao delegar implementação, revisão ou documentação a subagentes, especialmente ao rodar 2+
-  tarefas ao mesmo tempo ou ao otimizar custo de token entre Claude e um provedor terceiro.
-  Trigger: "paralelo", "multi-agente", "delegar", "subagente", "fan-out", "vários agentes",
-  "orquestrar", "deepseek", "roteamento de provedor", "economia de token", "/bks-multiagent-skill".
+  Orquestração multi-agente Claude + DeepSeek: governança de paralelismo e roteamento de provedor
+  (Claude + terceiro compatível com a API Anthropic, ex. DeepSeek v4-pro/flash) para sistemas de
+  alta criticidade. Define quais tarefas podem rodar em paralelo sem corromper estado
+  compartilhado, quais exigem revisão independente obrigatória, como briefar subagentes gastando
+  o mínimo de tokens, e quais perfis (`builder`/`scribe`) podem rodar num provedor mais barato sem
+  abrir mão de qualidade nos papéis que importam (`reviewer` nunca roteia). Redução de custo
+  medida em produção: ≈89,7% (≈9,7×) no mesmo volume de token, tier Opus/deepseek-v4-pro — ver
+  `references/roteamento-hibrido-provedores.md`. Funciona em qualquer stack — cada projeto declara
+  suas zonas de contenção e áreas sensíveis em um manifesto. Use ao delegar implementação, revisão
+  ou documentação a subagentes, especialmente ao rodar 2+ tarefas ao mesmo tempo ou ao otimizar
+  custo de token entre Claude e um provedor terceiro. Trigger: "paralelo", "multi-agente",
+  "delegar", "subagente", "fan-out", "vários agentes", "orquestrar", "deepseek", "deepseek v4",
+  "claude + deepseek", "orquestração híbrida", "roteamento de provedor", "economia de token",
+  "reduzir custo de agente", "cost reduction", "hybrid orchestration", "/bks-multiagent-skill".
 ---
 
 # Orquestração multi-agente com governança — e economia de provedor (Claude + DeepSeek)
@@ -118,6 +122,12 @@ combinam por perfil:
 | `scribe` | Sim | Sincronizar doc de trabalho já verificado é o caso mais barato de todos |
 | `planner` | Não, por padrão | Decisão de arquitetura errada custa caro — mantenha em Claude a menos que a tarefa seja mecânica o bastante |
 | `reviewer` | **Nunca** | Portão 2 (un-repetível): o custo de um achado escapando supera qualquer economia de token, independente de o provedor terceiro ser confiável ou não com o dado |
+
+**Economia medida (não é benchmark, é o que aconteceu em produção, 2026-08-20):** mesmo volume de
+token (257.203, os dois lados batem exato), tier Opus/`deepseek-v4-pro` — estimativa do Claude Code
+pra `claude-opus-5` ($0,4841) vs. billing real confirmado no painel da DeepSeek ($0,05). **≈89,7%
+mais barato, ≈9,7×.** Detalhe completo, com a ressalva de que isso não extrapola pra tier
+Sonnet/Haiku sem medir: `references/roteamento-hibrido-provedores.md`.
 
 **Como, sem gateway:** dentro de uma única sessão, `ANTHROPIC_BASE_URL` é global — muda para onde
 a requisição vai, não quem responde. Não há "este subagente vai pro provedor X" nativo sem um LLM
