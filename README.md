@@ -1,18 +1,33 @@
 # bks-multiagent-skill
 
-Orquestração multi-agente **Claude + DeepSeek**, com governança de paralelismo e roteamento de
-provedor para Claude Code — pensada para sistemas onde errar custa caro: pagamentos, saúde,
-identidade, dado regulado, infraestrutura.
+### Orquestração híbrida Claude + DeepSeek
 
-Paralelizar agentes é fácil. O difícil é fazer isso sem corromper estado compartilhado, sem perder
-rastreabilidade de quem decidiu o quê, sem queimar orçamento de tokens em agentes que redescobrem
-contexto que você já tinha — e, cada vez mais, sem pagar preço de modelo top de linha por trabalho
-mecânico quando um provedor terceiro compatível com a API Anthropic (DeepSeek v4-pro/flash) resolve
-pelo mesmo resultado por uma fração do custo.
+**É esse o foco da skill:** dividir o trabalho de um time de agentes entre Claude (Anthropic) e
+DeepSeek (provedor terceiro compatível com a API Anthropic) por perfil — sem gateway, sem misturar
+provedor dentro da mesma sessão, sem nunca deixar a chave do terceiro passar pelo contexto da
+conversa. A governança de paralelismo por trás (zonas de contenção, segregação de funções, portão
+de revisão) é o que torna esse roteamento seguro em sistemas onde errar custa caro: pagamentos,
+saúde, identidade, dado regulado, infraestrutura.
 
 > **Medido em produção, não estimado:** mesmo volume de token (257.203), tier Opus/`deepseek-v4-pro`
 > — estimativa Anthropic $0,4841 vs. billing real da DeepSeek $0,05. **≈89,7% mais barato (≈9,7×).**
 > Detalhe e como reproduzir: [`skill/references/roteamento-hibrido-provedores.md`](skill/references/roteamento-hibrido-provedores.md).
+
+---
+
+## Claude vs DeepSeek — qual provedor por perfil
+
+| Perfil | Provedor | Modelo | Custo medido (tier Opus, ver acima) | Regra |
+|---|---|---|---|---|
+| `reviewer` | **Claude, sempre** | Opus | — | **Nunca roteia** — portão un-repetível (Portão 2); o custo de um achado escapando supera qualquer economia |
+| `planner` | Claude, por padrão | Sonnet | — | Decisão de arquitetura errada custa caro; roteia só se a tarefa for mecânica o bastante |
+| `builder` | Claude **ou** DeepSeek v4-pro | Sonnet / `deepseek-v4-pro` | ≈9,7× mais barato no DeepSeek | Roteia se a spec já vem pronta do `planner` e a tarefa não depende de MCP |
+| `scribe` | DeepSeek v4-pro/flash (recomendado) | Haiku / `deepseek-v4-flash` | ≈9,7× mais barato no DeepSeek | O caso mais barato de todos — sincronizar doc de trabalho já verificado |
+
+Como funciona sem gateway, limitações confirmadas do provedor (sem MCP, sem cache de prompt), setup
+que nunca deixa a chave passar pelo contexto da conversa, e como medir o *seu* custo real (não
+extrapole o número acima sem medir no seu próprio uso):
+[`skill/references/roteamento-hibrido-provedores.md`](skill/references/roteamento-hibrido-provedores.md).
 
 ---
 
@@ -88,6 +103,9 @@ Em uma frase: **sequencial é o padrão; paralelo precisa ser justificado.**
 | `reviewer` | Opus | Revisão de segurança/conformidade — só lê | Editar código |
 | `planner` | Sonnet | Specs, ADRs, quebra de tarefa | Código de produção |
 | `scribe` | Haiku | Sincronizar docs de trabalho já verificado | Decidir o que foi feito |
+
+Modelo (esta tabela) e provedor (tabela "Claude vs DeepSeek" no topo) são eixos independentes que
+se combinam — esta tabela não muda quando você roteia `builder`/`scribe` pra DeepSeek.
 
 Ordem dentro de uma entrega: `planner` → `builder` → `reviewer` → `scribe`. Nunca em paralelo entre
 si — são dependentes por natureza.
