@@ -3,6 +3,37 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.5.0] - 2026-08-20
+
+Reposicionamento pedido pelo usuário logo após a v1.4.0: roteamento de provedor deixa de ser nota
+de rodapé opcional e passa a ser um dos dois eixos centrais que a skill governa, ao lado da
+governança de paralelismo em si.
+
+### Alterado
+
+- **`skill/SKILL.md`** — frontmatter `description` reescrita para citar roteamento de provedor e
+  DeepSeek explicitamente (novos triggers: "deepseek", "roteamento de provedor", "economia de
+  token"); título e parágrafo de abertura agora apresentam governança de paralelismo e economia de
+  provedor como os dois eixos que a skill governa, não um princípio e um extra.
+- **`skill/SKILL.md`** — o que era a subseção de três linhas "Roteamento de provedor (opcional)"
+  dentro de *Perfis de agente* virou seção própria de primeiro nível, **"Roteamento de provedor —
+  Claude + terceiro (DeepSeek)"**, com a tabela de quais perfis roteiam, o comando de subprocesso
+  completo inline (não só um pointer), e a regra de quando/como registrar a decisão de cobrir área
+  sensível — mantendo `references/roteamento-hibrido-provedores.md` como o guia detalhado.
+- **`README.md`** — tabela "O problema que ela resolve" ganha uma quarta linha (custo de provedor
+  desproporcional); abertura menciona economia de provedor; novo princípio 7 (modelo e provedor são
+  eixos independentes, cada um com seu próprio julgamento de risco).
+
+### Por que isso importa
+
+A v1.4.0 tratou isso como um apêndice para quem já conhecia a skill e foi procurar. Uso real em
+produção (favo-pay, mesma sessão) mostrou que o ganho de custo é grande o bastante — e o padrão
+simples o bastante (sem gateway, um `claude -p` à parte) — para merecer aparecer em qualquer
+primeiro contato com a skill, não só para quem já sabia que existia e foi ler `references/`.
+Continua **opcional**: nada muda para quem só quer governança de paralelismo em Claude puro.
+
+[1.5.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.5.0
+
 ## [1.4.0] - 2026-08-20
 
 Adição vinda de pedido real do usuário (favo-pay) — testar um provedor terceiro (DeepSeek, via

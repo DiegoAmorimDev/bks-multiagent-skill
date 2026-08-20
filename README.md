@@ -1,23 +1,27 @@
 # bks-multiagent-skill
 
-Skill de orquestração multi-agente **com governança** para Claude Code, pensada para sistemas onde
-errar custa caro: pagamentos, saúde, identidade, dado regulado, infraestrutura.
+Skill de orquestração multi-agente **com governança e economia de provedor** para Claude Code,
+pensada para sistemas onde errar custa caro: pagamentos, saúde, identidade, dado regulado,
+infraestrutura.
 
 Paralelizar agentes é fácil. O difícil é fazer isso sem corromper estado compartilhado, sem perder
-rastreabilidade de quem decidiu o quê, e sem queimar orçamento de tokens em agentes que
-redescobrem contexto que você já tinha.
+rastreabilidade de quem decidiu o quê, sem queimar orçamento de tokens em agentes que redescobrem
+contexto que você já tinha — e, cada vez mais, sem pagar preço de modelo top de linha por trabalho
+mecânico quando um provedor terceiro compatível com a API Anthropic (ex. DeepSeek) resolve pelo
+mesmo resultado por uma fração do custo.
 
 ---
 
 ## O problema que ela resolve
 
-Ao delegar trabalho a vários agentes ao mesmo tempo, três coisas quebram na prática:
+Ao delegar trabalho a vários agentes ao mesmo tempo, quatro coisas quebram na prática:
 
 | Problema | Como aparece | O que a skill faz |
 |---|---|---|
 | **Colisão em estado compartilhado** | Dois agentes editam o arquivo de wiring; dois escolhem o mesmo número de migration | Mapa de zonas de contenção + protocolo de reserva de recursos numerados |
 | **Perda de governança** | Quem escreveu o código também aprovou; decisão crítica ficou só no relatório do agente | Segregação de funções obrigatória + trilha de auditoria no repositório |
 | **Desperdício de tokens** | Agente nasce frio e gasta metade do orçamento explorando o repositório | Briefing com allowlist e contexto mínimo + modelo proporcional à tarefa |
+| **Custo de provedor desproporcional** | Trabalho mecânico (`builder`/`scribe`) rodando no mesmo modelo caro que a revisão de segurança | Roteamento opcional Claude + terceiro (DeepSeek), por subprocesso, sem gateway, sem tocar nos perfis onde qualidade pesa mais que preço |
 
 ---
 
@@ -116,6 +120,9 @@ docs/
    é quem tem visão do todo.
 5. **A fonte da verdade é o repositório**, não o documento de planejamento. Specs envelhecem.
 6. **Se você não sabe quais arquivos o agente vai tocar, não delegue ainda.**
+7. **Modelo e provedor são eixos independentes.** Rebaixar tier é risco de qualidade; trocar
+   provedor é risco de dado saindo do perímetro da Anthropic — as duas trocas exigem julgamentos
+   diferentes, nunca a mesma regra de bolso.
 
 ---
 
