@@ -3,6 +3,45 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.8.0] - 2026-08-20
+
+Aprofundamento pedido pelo usuário: a tabela "Os quatro perfis" ganha o uso do DeepSeek v4-pro/flash
+por perfil, citações formais das fontes usadas (DeepSeek + Anthropic + medição própria), e um
+guia completo de configuração direto no README — não só um link pra referência.
+
+### Adicionado
+
+- **`README.md`**, nova seção **"Configurar o DeepSeek"** — passo a passo completo: gerar a API
+  key, salvar sem nunca digitar pro agente (arquivo temporário ou variável de usuário permanente,
+  com o aviso explícito de nunca fixar `ANTHROPIC_API_KEY`/`ANTHROPIC_BASE_URL` permanentemente),
+  testar a rota (chave boa/chave ruim), rodar uma tarefa de verdade, e uma tabela de erros comuns
+  com causa e ação.
+- **`README.md`**, nova seção **"Fontes e citações"** — DeepSeek (guia da API Anthropic-compatível,
+  release notes de GA e preview do V4) e Anthropic/Claude Code (model-config, llm-gateway), mais a
+  medição própria de economia, cada uma com link direto.
+- **`skill/references/roteamento-hibrido-provedores.md`**, nova seção **"Fontes"** — mesmas
+  citações em detalhe, com o que especificamente cada fonte sustenta (mapeamento de modelo, campos
+  não suportados, limite do `ANTHROPIC_BASE_URL`); e **"Como reproduzir esta medição"** — passo a
+  passo pra qualquer projeto medir seu próprio custo real em vez de herdar o número desta sessão.
+
+### Alterado
+
+- **`README.md`**, tabela "Os quatro perfis" ganha coluna "Uso do DeepSeek v4-pro/flash" — descreve
+  especificamente quando/como cada perfil roteia (`builder`→`deepseek-v4-pro` via alias `opus` se
+  mecânico e sem MCP; `reviewer`→nunca; `planner`→`deepseek-v4-flash` só se mecânico; `scribe`→
+  `deepseek-v4-flash` recomendado por padrão), não só o modelo Claude sugerido.
+
+### Por que isso importa
+
+Citar fonte com data, em vez de afirmar comportamento de provedor terceiro como fato atemporal, é o
+que permite a skill envelhecer bem — quando o mapeamento de modelo ou uma limitação da DeepSeek
+mudar, quem ler sabe exatamente qual doc oficial conferir e quando a afirmação daqui foi verificada
+pela última vez. O guia de configuração no README (em vez de só um link) reduz a distância entre
+"ler sobre o padrão" e "rodar a primeira tarefa roteada" — o tipo de fricção que faz uma feature
+opcional nunca ser usada de verdade.
+
+[1.8.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.8.0
+
 ## [1.7.0] - 2026-08-20
 
 `README.md` reescrito pra abrir direto em Claude+DeepSeek, a pedido do usuário: v1.5.0/v1.6.0
