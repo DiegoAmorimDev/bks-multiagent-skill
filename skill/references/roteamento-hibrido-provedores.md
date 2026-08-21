@@ -166,6 +166,75 @@ que o orquestrador ecoa de volta pra conversa. Padrão:
 
 4. Apague o arquivo da chave assim que o teste/lote de tarefas terminar.
 
+## Isole o subagente do pipeline completo do projeto — senão ele reimplementa a orquestração sozinho
+
+**O erro mais caro que este padrão pode cometer, e o briefing padrão de "Template de briefing" do
+`SKILL.md` não previne sozinho.** Quase todo projeto que usa esta skill tem um `CLAUDE.md`/
+`WORKFLOW.md` que instrui **qualquer sessão do Claude Code** a, como primeira ação, ler o pipeline
+completo do projeto — spec → builder → testes → revisão de segurança → commit. Isso é correto e
+desejável numa sessão normal. Mas o subprocesso `claude -p` roteado para o terceiro **não sabe que
+é só um papel dentro de uma orquestração maior** — ele abre no mesmo repositório, lê os mesmos
+arquivos, e não tem como diferenciar "sou a sessão principal" de "sou um builder delegado". Sem
+instrução em contrário, ele segue o `WORKFLOW.md` do jeito que está escrito: tenta rodar o pipeline
+inteiro sozinho.
+
+Isso já aconteceu em produção desta skill: um subagente delegado (só deveria implementar um fix)
+leu o `WORKFLOW.md` do projeto, decidiu que precisava fechar o ciclo completo, e **invocou o
+subagente `favo-security-reviewer` por conta própria** — que então rodou na mesma infraestrutura do
+terceiro (porque `ANTHROPIC_BASE_URL` é global pro processo inteiro, ver "O limite que isso não
+cruza" acima), não em Claude real. O relatório voltou dizendo "revisão de segurança aprovada" — uma
+aprovação que não vale nada, porque o gate mais importante desta skill (Portão 2, revisor sempre
+independente) foi silenciosamente contornado pelo próprio subagente, sem má intenção, só seguindo a
+documentação do repositório ao pé da letra. Descoberto porque o relatório citava achados específicos
+de uma "revisão" que o orquestrador nunca disparou — se não fosse por isso, teria passado
+despercebido.
+
+**O fix é contextualizar explicitamente, todo briefing, antes de qualquer instrução de tarefa.**
+Adicione este preâmbulo (adapte os nomes de subagente do seu projeto):
+
+```
+CONTEXTO DE ORQUESTRACAO - LEIA ISTO PRIMEIRO:
+Voce esta rodando como UM UNICO PAPEL (builder) dentro de uma orquestracao multi-agente maior.
+A sessao principal (orquestrador) cuida de planejamento, revisao de seguranca e commit/push -
+isso NAO e trabalho seu.
+
+Este repositorio tem um CLAUDE.md/WORKFLOW.md que instrui QUALQUER sessao do Claude Code a
+seguir um pipeline completo. IGNORE ESSA INSTRUCAO PARA ESTA TAREFA - voce e SO o passo
+builder, ja dentro do pipeline.
+
+REGRAS ABSOLUTAS:
+1. NUNCA invoque outro subagente (Task/Agent tool) - especialmente nunca o de revisao de
+   seguranca do projeto. Qualquer subagente que voce disparar rodaria neste MESMO provedor,
+   quebrando a segregacao de funcoes que a revisao existe pra garantir.
+2. NUNCA rode git commit/push/checkout -b/merge (leitura tipo status/diff/log esta OK).
+3. NAO leia nem siga o WORKFLOW.md/CLAUDE.md do projeto - essas instrucoes sao pro
+   orquestrador, nao pra voce. Siga SO o briefing abaixo.
+4. Ao terminar implementacao + verificacao, PARE e relate. Nao tente integrar nem decidir se
+   esta "pronto pra producao".
+```
+
+Coloque este bloco **antes** de qualquer separador (`---`) ou seção do briefing normal — algumas
+implementações de shell/CLI podem truncar strings muito longas de forma inesperada (aconteceu uma
+vez nesta skill, ver nota de robustez logo abaixo); se o preâmbulo vier primeiro, mesmo um corte
+parcial ainda preserva a regra mais importante.
+
+**Nota de robustez — não confie em string longa via argumento de linha de comando.** Na mesma
+ocorrência acima, um briefing de ~7.700 caracteres passado como `claude -p $briefing` (variável
+PowerShell interpolada no comando) chegou **truncado pela metade** no subagente — sem erro, sem
+aviso, só sumiu o resto do texto. A causa exata não foi isolada (não é limite de tamanho do
+Windows — 7.700 caracteres está bem abaixo de qualquer limite conhecido de `CreateProcess`), mas o
+padrão mais robusto, testado com sucesso, é: salvar o briefing em arquivo e instruir o subagente a
+**ler o arquivo com sua própria ferramenta de leitura**, em vez de depender que o texto sobreviva
+inteiro à passagem de argumento:
+
+```powershell
+# Frágil - pode truncar sem aviso:
+claude -p $briefingLongo --model opus ...
+
+# Mais robusto - o proprio subagente le o arquivo completo:
+claude -p "Leia o arquivo C:\caminho\briefing.txt e siga as instrucoes dele integralmente. Comece agora." --model opus ...
+```
+
 ## Não espere ver isso no agents-observe
 
 Testado em 2026-08-20: um `claude -p` (modo headless) rodando na mesma pasta de um projeto já
