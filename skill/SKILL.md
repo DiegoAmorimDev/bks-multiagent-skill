@@ -147,6 +147,13 @@ Remove-Item Env:\ANTHROPIC_API_KEY; Remove-Item Env:\ANTHROPIC_BASE_URL
 `deepseek-v4-pro` (`claude-sonnet`/`claude-haiku` mapeiam para `deepseek-v4-flash`). Confirme o
 mapeamento vigente na doc do provedor antes de assumir que continua igual.
 
+**Isole o subagente do `WORKFLOW.md`/`CLAUDE.md` do projeto — senão ele reimplementa o pipeline
+inteiro sozinho, inclusive invocando o `reviewer` (que rodaria no mesmo provedor terceiro,
+invalidando a revisão). Já aconteceu em produção desta skill. O briefing precisa deixar explícito,
+**antes** de qualquer outra instrução: "você é só o papel builder desta orquestração; nunca dispare
+outro subagente; nunca commite; ignore o WORKFLOW.md do projeto, siga só este briefing." Preâmbulo
+completo e a história do incidente: `references/roteamento-hibrido-provedores.md`.
+
 **Antes de rotear área sensível do manifesto** (financeiro, PCI, dado regulado): por padrão esta
 skill assume que não se roteia — trafegar código/prompt/saída de ferramenta por infraestrutura de
 terceiro é uma decisão de risco que só o dono do projeto pode tomar, e que precisa virar registro

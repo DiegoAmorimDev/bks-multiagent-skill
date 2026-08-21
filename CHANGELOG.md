@@ -3,6 +3,41 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.9.0] - 2026-08-20
+
+Correção vinda de incidente real: um subagente delegado à DeepSeek, sem instrução em contrário,
+leu o `WORKFLOW.md` do projeto hospedeiro e tentou rodar o pipeline inteiro sozinho — inclusive
+invocando `favo-security-reviewer`, que rodou na infraestrutura do terceiro em vez de Claude real,
+invalidando a "aprovação" que reportou. Descoberto só porque o relatório citava achados específicos
+de uma revisão que o orquestrador nunca disparou.
+
+### Adicionado
+
+- **`skill/references/roteamento-hibrido-provedores.md`**, nova seção "Isole o subagente do
+  pipeline completo do projeto" — narra o incidente, dá o preâmbulo obrigatório de contexto de
+  orquestração (4 regras absolutas: nunca dispare subagente, nunca toque em git, ignore o
+  `WORKFLOW.md`/`CLAUDE.md` do projeto, pare e relate ao terminar) para colar no início de todo
+  briefing cross-provedor.
+- Mesma seção, nota de robustez separada: um briefing de ~7.700 caracteres passado como argumento
+  de linha de comando (`claude -p $briefingLongo`) chegou truncado pela metade no subagente, sem
+  erro nem aviso — causa exata não isolada, mas não é limite de tamanho conhecido do Windows.
+  Padrão mais robusto testado com sucesso: instruir o subagente a ler o briefing de um arquivo com
+  sua própria ferramenta de leitura, em vez de depender que uma string longa sobreviva inteira à
+  passagem de argumento.
+- **`skill/SKILL.md`**, aviso resumido na seção "Roteamento de provedor" apontando pro incidente e
+  pro preâmbulo, visível sem precisar abrir a referência completa.
+
+### Por que isso importa
+
+O subagente não agiu por má intenção — seguiu a documentação do próprio repositório ao pé da
+letra, porque nada no briefing dizia que ele era só uma peça de uma orquestração maior. É
+exatamente o tipo de falha silenciosa que esta skill existe para prevenir (Portão 2: revisor
+sempre independente) — e aconteceu por causa de uma lacuna no *padrão de roteamento*, não no
+padrão de governança em si. Sem o preâmbulo explícito, todo projeto com um `WORKFLOW.md`
+razoavelmente completo (o que esta skill incentiva) está exposto ao mesmo risco.
+
+[1.9.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.9.0
+
 ## [1.8.0] - 2026-08-20
 
 Aprofundamento pedido pelo usuário: a tabela "Os quatro perfis" ganha o uso do DeepSeek v4-pro/flash
