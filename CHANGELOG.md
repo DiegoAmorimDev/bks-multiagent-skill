@@ -3,6 +3,41 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.10.0] - 2026-08-23
+
+Dois achados reais de uma sessão de produção (favo-pay) usando o roteamento híbrido de ponta a
+ponta pela primeira vez num lote de tarefas de verdade (não só o teste de validação da rota).
+
+### Adicionado
+
+- **`skill/SKILL.md`**, abertura da seção "Roteamento de provedor" — aviso explícito de que
+  disparar um subagente pelo nome (`Task`/`Agent subagent_type`, ou equivalente do harness) **não
+  rotea nada**: roda sempre dentro da sessão atual, sempre em Claude/Anthropic, independente do
+  perfil ser elegível a rotear. Tabela de dois mecanismos de delegação mutuamente exclusivos.
+  Causa real: orquestrador disparou `favo-feature-builder` via subagente por nome achando que
+  cobria o roteamento pro DeepSeek pedido explicitamente pelo usuário — a tarefa rodou inteira em
+  Claude real, custo normal, zero economia, sem nenhum sinal de erro. Só percebido porque o
+  usuário perguntou depois se tinha ido pro DeepSeek mesmo.
+- **`skill/references/roteamento-hibrido-provedores.md`**, seção "Setup" (item 3) — `--permission-
+  mode acceptEdits` cobre escrita/edição, não leitura de caminho fora do diretório de trabalho do
+  subprocesso `-p`. Um briefing salvo fora desse diretório (ex.: scratchpad da sessão principal)
+  faz a leitura ser negada duas vezes, e o subagente para pra pedir orientação em vez de prosseguir
+  — comportamento correto do subagente, mas gasta uma chamada inteira (~$0,20-0,25 na ocorrência
+  real) sem produzir nada. Fix: salvar o briefing dentro do próprio diretório da tarefa.
+- **`README.md`**, tabela "Erros comuns" — duas linhas novas cobrindo os dois achados acima.
+
+### Por que isso importa
+
+Os dois problemas têm o mesmo formato: nenhum erro, nenhum aviso — só ausência do resultado
+esperado (economia que não aconteceu; subagente que não progrediu). Isso os torna fáceis de
+passar despercebidos numa sessão corrida, especialmente o primeiro — a tarefa *é entregue*,
+correta, só não pelo caminho barato pedido. A skill já documentava os dois mecanismos de
+delegação separadamente (perfil/modelo vs. provedor), mas nunca tinha dito explicitamente que
+**escolher um mecanismo de dispatch errado não é um erro que se manifesta** — é preciso decidir
+corretamente antes, porque nada avisa depois.
+
+[1.10.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.10.0
+
 ## [1.9.0] - 2026-08-20
 
 Correção vinda de incidente real: um subagente delegado à DeepSeek, sem instrução em contrário,

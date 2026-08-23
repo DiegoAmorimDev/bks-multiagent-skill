@@ -164,7 +164,23 @@ que o orquestrador ecoa de volta pra conversa. Padrão:
    do briefing (Passo 5 do `SKILL.md`) como o limite real de blast radius, já que o modelo por trás
    não é o Claude que você audita normalmente.
 
-4. Apague o arquivo da chave assim que o teste/lote de tarefas terminar.
+   **`acceptEdits` cobre escrita/edição — não cobre leitura de caminho fora do diretório de
+   trabalho.** Se o briefing for passado como arquivo pra o subagente ler (padrão recomendado
+   acima, "Nota de robustez"), esse arquivo **precisa estar dentro do diretório de trabalho**
+   (`Set-Location <diretorio-da-tarefa>`, e o caminho do briefing relativo a esse mesmo
+   diretório). Um caminho fora dele (scratchpad da sessão, `%TEMP%` fora do repo, etc.) dispara um
+   prompt de permissão de leitura que ninguém está lá pra aprovar em modo `-p` — a leitura é
+   negada, geralmente duas vezes (o subagente tenta de novo antes de desistir), e ele para e
+   **relata pedindo orientação** em vez de travar ou inventar que leu — o que é o comportamento
+   certo do subagente, mas ainda assim gasta uma chamada inteira (tokens reais, ~$0,20-0,25 numa
+   ocorrência real) sem produzir nada. Cenário real (favo-pay, 2026-08-23): briefing salvo no
+   scratchpad da sessão principal (`%TEMP%\claude\...`, fora do repositório) — negado duas vezes;
+   corrigido salvando o mesmo arquivo dentro do diretório do projeto e repetindo o comando.
+
+4. Apague o arquivo da chave (e o do briefing, se ficou salvo dentro do repo) assim que o
+   teste/lote de tarefas terminar — o do briefing também não deve ser commitado; se o projeto
+   hospedeiro não tiver um padrão de `.gitignore` pra arquivo temporário de orquestração, crie um
+   antes de gerar o primeiro (ex.: `.briefing-*.txt`).
 
 ## Isole o subagente do pipeline completo do projeto — senão ele reimplementa a orquestração sozinho
 
