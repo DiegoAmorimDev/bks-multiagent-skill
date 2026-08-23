@@ -111,6 +111,25 @@ do agente nem no modelo escolhido.
 
 ## Roteamento de provedor — Claude + terceiro (DeepSeek)
 
+**Antes de mais nada: disparar um subagente pelo nome NÃO rotea nada.** Se o seu harness tem uma
+ferramenta de subagente (`Task`/`Agent` com `subagent_type`, ou equivalente) e você a usa pra
+chamar `builder`/`scribe` pelo nome, isso roda **dentro do processo atual**, sempre no mesmo
+provedor da sessão principal (Anthropic) e no modelo do frontmatter do agente — **nunca** no
+terceiro, mesmo que o perfil seja elegível pra rotear segundo a tabela abaixo. São dois
+mecanismos de delegação mutuamente exclusivos pra uma mesma tarefa:
+
+| Mecanismo | Onde roda | Rotea pra terceiro? |
+|---|---|---|
+| Subagente por nome (`Task`/`Agent subagent_type`, ou equivalente do harness) | Dentro da sessão atual | **Nunca** — é sempre Anthropic, mesmo perfil `builder`/`scribe` |
+| Subprocesso `claude -p` separado (ver abaixo) | Processo à parte, com `ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY` do terceiro só naquele comando | Sim, é o único caminho que rotea de verdade |
+
+Não existe meio-termo nem detecção automática: nenhum dos dois avisa quando você escolheu o
+mecanismo errado pra intenção que tinha. Decida **antes** de disparar. Causa já observada em
+produção desta skill: orquestrador disparou o `builder` via `Task`/`Agent subagent_type` achando
+que isso já cobria o roteamento pro DeepSeek pedido explicitamente pelo usuário — a tarefa inteira
+rodou em Claude real, custo normal, zero economia, sem nenhum sinal de erro. Só percebido porque o
+usuário perguntou depois "isso rodou no DeepSeek mesmo?".
+
 Modelo e provedor são eixos independentes. Modelo decide o tier (Haiku/Sonnet/Opus); provedor
 decide **onde** a requisição é processada — Anthropic direto, ou um terceiro que expõe API
 compatível com o formato Anthropic (`ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY`). Os dois se

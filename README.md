@@ -170,6 +170,8 @@ e como medir seu próprio custo —: [`skill/references/roteamento-hibrido-prove
 | Tarefa falha silenciosamente ou ignora um MCP server | DeepSeek não suporta MCP | Não roteie essa tarefa — mantenha em Claude |
 | Chave não aparece disponível numa sessão nova | `SetEnvironmentVariable` gravou no registro, processo atual não releu | Use `GetEnvironmentVariable(..., "User")` explícito, não `$env:` direto |
 | `total_cost_usd` do JSON parece caro demais | É a estimativa Anthropic, não o custo real da DeepSeek | Confira o painel de billing do provedor |
+| Tarefa "roteada" rodou no custo normal, sem economia nenhuma | Disparada via `Task`/`Agent subagent_type` (subagente por nome) em vez do subprocesso `claude -p` — os dois nunca se equivalem, o primeiro nunca rotea | Use sempre o subprocesso `claude -p` com `ANTHROPIC_BASE_URL` setado; disparar um subagente pelo nome do seu harness roda 100% em Claude, mesmo perfil `builder`/`scribe` |
+| Subagente para e pergunta como ler o briefing, ou relata "não consegui ler o arquivo" | Arquivo de briefing salvo fora do diretório de trabalho do subprocesso (`acceptEdits` não libera leitura fora dele) | Salve o briefing **dentro** do diretório da tarefa (`Set-Location` primeiro), nunca no scratchpad da sessão principal |
 
 ---
 
