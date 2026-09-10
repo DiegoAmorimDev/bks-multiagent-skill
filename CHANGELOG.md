@@ -3,6 +3,33 @@
 Formato baseado em [Keep a Changelog](https://keepachangelog.com/pt-BR/1.1.0/).
 Versionamento [SemVer](https://semver.org/lang/pt-BR/).
 
+## [1.11.0] - 2026-09-09
+
+Achado real de uma sessão de produção (favo-pay): `planner` disparado pra uma tarefa que o
+orquestrador já tinha contexto suficiente pra fazer direto.
+
+### Adicionado
+
+- **`skill/SKILL.md`**, seção "Perfis de agente" — novo bloco "Perfil não é mandato de spawn".
+  Deixa explícito que ter um perfil definido não obriga spawn de subagente novo: `reviewer` sempre
+  nasce frio (isolamento é o próprio requisito, segregação de funções); `builder` se beneficia de
+  isolamento quando há zona de contenção real a conter; `planner`/`scribe` raramente precisam disso
+  — o valor deles é formatar contexto que o orquestrador já tem, não descobrir contexto novo. Causa
+  real: `planner` disparado pra registrar uma decisão de arquitetura já validada com o usuário na
+  própria sessão gastou ~219 mil tokens relendo um arquivo de decisões de ~2900 linhas, specs e
+  `CLAUDE.md` que o orquestrador já tinha lido — zero ganho de isolamento, só duplicação de custo.
+
+### Por que isso importa
+
+O orçamento de tokens já cobria "não delegue tarefa pequena" e "continue agente vivo em vez de
+spawnar frio", mas não cobria o caso onde a tarefa em si é grande (justifica um perfil dedicado)
+mas o **contexto** pra fazê-la já está pago pelo orquestrador. Nesse caso o subagente não está
+paralelizando nem isolando nada — só refazendo leitura já feita. A pergunta certa antes de spawnar
+`planner`/`scribe` não é "essa tarefa é grande o bastante pro perfil", é "eu, orquestrador, já
+tenho o contexto pra fazer isso agora".
+
+[1.11.0]: https://github.com/DiegoAmorimDev/bks-multiagent-skill/releases/tag/v1.11.0
+
 ## [1.10.0] - 2026-08-23
 
 Dois achados reais de uma sessão de produção (favo-pay) usando o roteamento híbrido de ponta a

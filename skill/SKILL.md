@@ -84,6 +84,32 @@ Quatro perfis cobrem a maior parte do trabalho. Templates em `templates/agents/`
 Ordem natural dentro de **uma** entrega: `planner` → `builder` → `reviewer` → `scribe`.
 São dependentes por natureza — nunca paralelize entre si na mesma entrega.
 
+### Perfil não é mandato de spawn
+
+Ter um perfil definido (`planner`/`builder`/`reviewer`/`scribe`) não significa que toda tarefa
+daquele tipo precisa de um subagente novo. Spawn frio só se paga quando existe isolamento real a
+proteger:
+
+- **`reviewer`** sempre nasce frio — é o único caso onde isolamento é o próprio requisito:
+  segregação de funções exige que ele não carregue o viés de quem já decidiu/implementou.
+- **`builder`** se beneficia de isolamento quando há zona de contenção a conter (allowlist de
+  arquivo, escopo de módulo) — mas se o orquestrador já tem o contexto e a tarefa é pequena, fazer
+  direto é mais barato que brifar um agente frio pra ele reler o que você já leu.
+- **`planner`/`scribe`** raramente precisam de isolamento — o valor deles é threading de contexto
+  já lido pelo orquestrador para um formato específico (spec, ADR, doc). Se o orquestrador **já**
+  tem esse contexto (leu os arquivos relevantes, já validou a direção com o usuário), spawná-los
+  mesmo assim só soma o custo de reler tudo do zero, sem ganho de isolamento nenhum.
+
+**Já visto em produção desta skill:** um `planner` foi disparado pra registrar uma decisão de
+arquitetura já validada com o usuário na própria sessão — o orquestrador já tinha lido o achado de
+segurança completo, o código relevante e as convenções do projeto. O subagente, nascendo frio,
+precisou reler um arquivo de decisões de ~2900 linhas, specs, plano macro e `CLAUDE.md` só para
+chegar no mesmo ponto de partida que o orquestrador já estava. Custo: ~219 mil tokens numa tarefa
+de redação, quando o orquestrador fazendo direto teria gasto uma fração disso (leituras pontuais de
+formato, não a base inteira). Pergunta a fazer antes de spawnar `planner`/`scribe`: "eu, orquestrador,
+já tenho o contexto pra fazer isso agora?" Se sim, faça — reserve o spawn pra quando a resposta é
+não, ou quando o perfil existe por isolamento (`reviewer`) e não por economia de contexto.
+
 ### Confirme que o agente registrou
 
 Criar o arquivo de definição não garante que o harness carregou o agente. **Frontmatter inválido é
